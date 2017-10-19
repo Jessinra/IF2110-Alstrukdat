@@ -13,7 +13,7 @@
 #include "stackt.h"
 #include <stdio.h>
 #define Nil 0
-#define MaxEl 10
+#define MaxEl 100
 #define Top(S) (S).TOP
 #define InfoTop(S) (S).T[(S).TOP]
 
