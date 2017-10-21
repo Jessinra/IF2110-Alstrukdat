@@ -46,19 +46,9 @@ infotype Avg (List L);
 void Konkat1 (List *L1, List *L2, List *L3);
 */
 
-#include "boolean.h"
 #include "listlinier.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-/* Definisi list : */
-/* List kosong : First(L) = Nil */
-/* Setiap elemen dengan address P dapat diacu Info(P), Next(P) */
-/* Elemen terakhir list : jika addressnya Last, maka Next(Last)=Nil */
-
-#define Info(P) (P)->info
-#define Next(P) (P)->next
-#define First(L) (L).First
 
 /* PROTOTYPE */
 /****************** TEST LIST KOSONG ******************/
