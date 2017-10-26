@@ -14,23 +14,23 @@ Selector        : Info(P), Next(P), First(L)
 Method list:
 
 boolean IsEmpty (List L);
-
 void CreateEmpty (List *L);
+
 address Alokasi (infotype X);
 void Dealokasi (address *P);
 
 address Search (List L, infotype X);
+boolean FSearch (List L, address P);
+address SearchPrec (List L, infotype X);
 
 void InsVFirst (List *L, infotype X);
 void InsVLast (List *L, infotype X);
-
-void DelVFirst (List *L, infotype *X);
-void DelVLast (List *L, infotype *X);
-
 void InsertFirst (List *L, address P);
 void InsertAfter (List *L, address P, address Prec);
 void InsertLast (List *L, address P);
 
+void DelVFirst (List *L, infotype *X);
+void DelVLast (List *L, infotype *X);
 void DelFirst (List *L, address *P);
 void DelP (List *L, infotype X);
 void DelLast (List *L, address *P);
@@ -38,12 +38,22 @@ void DelAfter (List *L, address *Pdel, address Prec);
 
 void PrintInfo (List L);
 int NbElmt (List L);
-
 infotype Max (List L);
+address AdrMax (List L);
 infotype Min (List L);
-infotype Avg (List L);
+address AdrMin (List L);
+float Average (List L);
 
+void DelAll (List *L);
+void InversList (List *L);
+List FInversList (List L);
+void CopyList (List *L1, List *L2);
+List FCopyList (List L);
+void CpAlokList (List Lin, List *Lout);
+
+void Konkat (List L1, List L2, List * L3);
 void Konkat1 (List *L1, List *L2, List *L3);
+void PecahList (List *L1, List *L2, List L);
 */
 
 #include "listlinier.h"
@@ -111,6 +121,63 @@ address Search (List L, infotype X)
                 found = true;
             }
             else{
+                CP = Next(CP);
+            }
+
+        }while ((CP != Nil) && !found);
+    }
+
+    return found_add;
+
+}
+
+boolean FSearch (List L, address P)
+/* Mencari apakah ada elemen list yang beralamat P */
+/* Mengirimkan true jika ada, false jika tidak ada */
+{
+	boolean found = false;
+	address CP = First(L);
+
+	if (!IsEmpty(L)){
+
+        do{
+            if (CP == P){
+                found = true;
+            }
+            else{
+                CP = Next(CP);
+            }
+
+        }while ((CP != Nil) && !found);
+    }
+
+    return found;
+
+}
+
+address SearchPrec (List L, infotype X)
+/* Mengirimkan address elemen sebelum elemen yang nilainya=X */
+/* Mencari apakah ada elemen list dengan Info(P)=X */
+/* Jika ada, mengirimkan address Prec, dengan Next(Prec)=P dan Info(P)=X. */
+/* Jika tidak ada, mengirimkan Nil */
+/* Jika P adalah elemen pertama, maka Prec=Nil */
+/* Search dengan spesifikasi seperti ini menghindari */
+/* traversal ulang jika setelah Search akan dilakukan operasi lain */
+{
+    boolean found = false;
+    address prec = Nil;
+    address found_add = Nil;
+    address CP = First(L);
+
+    if (!IsEmpty(L)){
+
+        do{
+            if (Info(CP) == X){
+                found_add = prec;
+                found = true;
+            }
+            else{
+				prec = CP;
                 CP = Next(CP);
             }
 
@@ -234,7 +301,7 @@ void DelP (List *L, infotype X)
         address prec = First(*L);
 
         if (prec == P){ // If its on first element
-            DelFirst(L, P);
+            DelFirst(L, &P);
         }
         else {
 
@@ -242,7 +309,7 @@ void DelP (List *L, infotype X)
                 prec = Next(prec);
             }
 
-            DelAfter(L, P, prec);
+            DelAfter(L, &P, prec);
         }
     }
     Dealokasi(&P);
@@ -327,18 +394,17 @@ int NbElmt (List L)
     return Count;
 }
 
-/*** Prekondisi untuk Max/Min/rata-rata : List tidak kosong ***/
-infotype Max (List L)
-/* Mengirimkan nilai Info(P) yang maksimum */
-{
+/*** Prekondisi untuk Max/Min/rata-rata : List tidak kosong ***/\
 
-    infotype Max = Info(First(L));
+address AdrMax (List L){
+
+	address Max = First(L);
     address CP = First(L);
 
     while(CP != Nil){
 
-        if (Info(CP) > Max){
-            Max = Info(CP);
+        if (Info(CP) > Info(Max)){
+            Max = CP;
         }
 
         CP = Next(CP);
@@ -347,17 +413,15 @@ infotype Max (List L)
     return Max;
 }
 
-infotype Min (List L)
-/* Mengirimkan nilai Info(P) yang maksimum */
-{
+address AdrMin (List L){
 
-    infotype Min = Info(First(L));
+	address Min = First(L);
     address CP = First(L);
 
     while(CP != Nil){
 
-        if (Info(CP) < Min){
-            Min = Info(CP);
+        if (Info(CP) < Info(Min)){
+            Min = CP;
         }
 
         CP = Next(CP);
@@ -366,11 +430,23 @@ infotype Min (List L)
     return Min;
 }
 
-infotype Avg (List L)
+infotype Max (List L)
+/* Mengirimkan nilai Info(P) yang maksimum */
+{
+	return Info(AdrMax(L));
+}
+
+infotype Min (List L)
+/* Mengirimkan nilai Info(P) yang maksimum */
+{
+	return Info(AdrMin(L));
+}
+
+float Average (List L)
 /* Mengirimkan nilai rata rata Info(P) */
 {
     int Count = 0;
-    infotype Sum = 0;
+    float Sum = 0;
     address CP = First(L);
 
     while(CP != Nil){
@@ -413,4 +489,240 @@ void Konkat1 (List *L1, List *L2, List *L3)
     CreateEmpty(L1);
     CreateEmpty(L2);
 
+}
+
+/****************** PROSES TERHADAP LIST ******************/
+void DelAll (List *L)
+/* Delete semua elemen list dan alamat elemen di-dealokasi */
+{
+	infotype temp;
+
+	while(!IsEmpty (*L)){
+		DelVFirst(L, &temp);
+	}
+
+	CreateEmpty(L);
+}
+
+void InversList (List *L)
+/* I.S. sembarang. */
+/* F.S. elemen list dibalik : */
+/* Elemen terakhir menjadi elemen pertama, dan seterusnya. */
+/* Membalik elemen list, tanpa melakukan alokasi/dealokasi. */
+{
+
+	address P,Q;
+	address temp;
+	address First = First(*L);
+
+	P = First(*L);
+	Q = Next(P);
+
+	while(Q != Nil){
+
+		P = Q;
+		Q = Next(Q);
+
+		P;
+		InsertFirst(L, P);
+		Next(First) = Q;
+	}
+}
+
+List FInversList (List L)
+/* Mengirimkan list baru, hasil invers dari L */
+/* dengan menyalin semua elemn list. Alokasi mungkin gagal. */
+/* Jika alokasi gagal, hasilnya list kosong */
+/* dan semua elemen yang terlanjur di-alokasi, harus didealokasi */
+{
+	// Create temporary list
+	List TempL;
+	CreateEmpty(&TempL);
+
+	// Create duplicate of original list
+	List TempOrg;
+	CreateEmpty(&TempOrg);
+	TempOrg = FCopyList(L);
+
+	infotype temp;
+	address tempAdr;
+	while(!IsEmpty(TempOrg)){
+
+		DelVFirst(&TempOrg, &temp);
+		tempAdr = Alokasi(temp);
+		if (tempAdr != Nil) {
+			InsertFirst(&TempL, tempAdr);
+		}
+		else{
+			DelAll(&TempL);
+			return TempL;
+		}
+	}
+
+	return TempL;
+}
+
+void CopyList (List *L1, List *L2)
+/* I.S. L1 sembarang. F.S. L2=L1 */
+/* L1 dan L2 "menunjuk" kepada list yang sama.*/
+/* Tidak ada alokasi/dealokasi elemen */
+{
+	First(*L2) = First(*L1);
+}
+
+
+List FCopyList (List L)
+/* Mengirimkan list yang merupakan salinan L */
+/* dengan melakukan alokasi. */
+/* Jika ada alokasi gagal, hasilnya list kosong dan */
+/* semua elemen yang terlanjur di-alokasi, harus didealokasi */
+{
+	// Create temporary list
+	List TempL;
+	CreateEmpty(&TempL);
+
+	address CP = First(L);
+	address tempAdr;
+
+	while(CP != Nil){
+
+		tempAdr = Alokasi(Info(CP));
+		if (tempAdr != Nil){
+			InsertLast(&TempL, tempAdr);
+			CP = Next(CP);
+		}
+		else{
+			DelAll(&TempL);
+			return TempL;
+		}
+	}
+
+	return TempL;
+}
+
+void CpAlokList (List Lin, List *Lout)
+/* I.S. Lin sembarang. */
+/* F.S. Jika semua alokasi berhasil,maka Lout berisi hasil copy Lin */
+/* Jika ada alokasi yang gagal, maka Lout=Nil dan semua elemen yang terlanjur dialokasi, didealokasi */
+/* dengan melakukan alokasi elemen. */
+/* Lout adalah list kosong jika ada alokasi elemen yang gagal */
+{
+	CreateEmpty(Lout);
+	*Lout = FCopyList(Lin);
+}
+
+void Konkat (List L1, List L2, List * L3)
+/* I.S. L1 dan L2 sembarang */
+/* F.S. L1 dan L2 tetap, L3 adalah hasil konkatenasi L1 & L2 */
+/* Jika semua alokasi berhasil, maka L3 adalah hasil konkatenasi*/
+/* Jika ada alokasi yang gagal, semua elemen yang sudah dialokasi */
+/* harus di-dealokasi dan L3=Nil*/
+/* Konkatenasi dua buah list : L1 & L2 menghasilkan L3 yang "baru" */
+/* Elemen L3 adalah hasil alokasi elemen yang “baru”. */
+/* Jika ada alokasi yang gagal, maka L3 harus bernilai Nil*/
+/* dan semua elemen yang pernah dialokasi didealokasi */
+{
+    CreateEmpty(L3);
+
+	address tempAdr;
+	infotype temp;
+	address CP;
+	boolean stop = false;
+
+    if (!(IsEmpty(L1))){
+
+        CP = First(L1);
+
+        while ((CP != Nil) && (!stop)){
+
+			temp = Info(CP);
+			tempAdr = Alokasi(temp);
+			if (tempAdr != Nil){
+				InsertLast(L3, tempAdr);
+				CP = Next(CP);
+			}
+			else {
+
+				DelAll(L3);
+				stop = true;
+			}
+		}
+
+		CP = First(L2);
+
+        while ((CP != Nil) && (!stop)){
+
+			temp = Info(CP);
+			tempAdr = Alokasi(temp);
+			if (tempAdr != Nil){
+				InsertLast(L3, tempAdr);
+				CP = Next(CP);
+			}
+			else {
+
+				DelAll(L3);
+				stop = true;
+			}
+		}
+
+    }
+    else{
+
+		CP = First(L2);
+
+        while ((CP != Nil) && (!stop)){
+
+			temp = Info(CP);
+			tempAdr = Alokasi(temp);
+			if (tempAdr != Nil){
+				InsertLast(L3, tempAdr);
+				CP = Next(CP);
+			}
+			else {
+
+				DelAll(L3);
+				stop = true;
+			}
+		}
+    }
+}
+
+void PecahList (List *L1, List *L2, List L)
+/* I.S. L mungkin kosong */
+/* F.S. Berdasarkan L, dibentuk dua buah list L1 dan L2 */
+/* L tidak berubah: untuk membentuk L1 dan L2 harus alokasi */
+/* L1 berisi separuh elemen L dan L2 berisi sisa elemen L */
+/* Jika elemen L ganjil, maka separuh adalah NbElmt(L) div 2 */
+{
+	int repeat = NbElmt(L) / 2;
+	int repeatII = NbElmt(L) - repeat;
+	address tempAdr;
+	infotype temp;
+	address CP = First(L);
+
+	CreateEmpty(L1);
+	CreateEmpty(L2);
+
+	while(repeat > 0){
+
+		temp = Info(CP);
+		tempAdr = Alokasi(temp);
+		if (tempAdr != Nil){
+			InsertLast(L1, tempAdr);
+			CP = Next(CP);
+			repeat--;
+		}
+
+	}
+
+	while(repeatII > 0){
+
+		temp = Info(CP);
+		tempAdr = Alokasi(temp);
+		if (tempAdr != Nil){
+			InsertLast(L2, tempAdr);
+			CP = Next(CP);
+			repeatII--;
+		}
+	}
 }
