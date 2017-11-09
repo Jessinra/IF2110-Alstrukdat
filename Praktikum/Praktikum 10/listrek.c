@@ -421,16 +421,14 @@ Kedua list mungkin kosong. Jika L1 kosong, maka hasilnya false. */
 	
 	/* Kasus khusus */
 	if(IsEmpty(L1)){
-		
 		return false;
 	}
 	
-	else if (IsOneElmt(L1)){
+	if (IsOneElmt(L1)){
 		return Search(L2, FirstElmt(L1));
 	}
 	
 	else{
-		printf("ye");
 		isallexist = IsAllExist(Tail(L1),L2);
 		return (Search(L2, FirstElmt(L1))) && isallexist;
 	}
