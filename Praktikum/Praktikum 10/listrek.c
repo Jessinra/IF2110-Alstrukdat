@@ -19,7 +19,13 @@ void Dealokasi (address P);
 int IsEmpty(List L);
 int IsOneElmt(List L);
 int NbElmtList (List L);
+infotype MaxList (List L)
+infotype MinList (List L)
+infotype SumList (List L)
+float AverageList (List L)
+
 boolean Search (List L, infotype X);
+boolean IsAllExist (List L1, List L2)
 
 infotype FirstElmt (List L);
 List Tail(List L);
@@ -32,7 +38,10 @@ List Concat (List L1, List L2);
 void MConcat (List L1, List L2, List *LHsl);
 
 void PrintList (List L);
-
+List InverseList (List L)
+void SplitPosNeg (List L, List *L1, List *L2)
+void SplitOnX (List L, infotype X, List *L1, List *L2)
+int ListCompare (List L1, List L2)
 */
 
 #include "listrek.h"
